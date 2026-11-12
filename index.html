@@ -1,0 +1,860 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FAF6F0">
+
+  <title>Germany Kitchen Planner</title>
+
+  <link rel="stylesheet" href="style.css">
+
+<link rel="manifest" href="./manifest.json">
+
+<meta name="theme-color" content="#2e7d32">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+</head>
+
+<body>
+
+<!-- =========================================
+     AUTHENTICATION & PROFILE SCREENS
+========================================= -->
+
+<div id="auth-container">
+
+  <!-- HOUSEHOLD PASSWORD LOGIN -->
+  <section id="auth-screen" class="auth-screen">
+
+    <div class="auth-card">
+
+      <div class="auth-icon">🍃</div>
+
+      <p class="eyebrow">WELCOME HOME</p>
+
+      <h1>Germany Kitchen</h1>
+
+      <p class="auth-description">
+        Your shared kitchen planner. Enter your household password to continue.
+      </p>
+
+      <form id="household-login-form">
+
+        <label for="household-password">
+          Household password
+        </label>
+
+        <input
+          type="password"
+          id="household-password"
+          placeholder="Enter household password"
+          autocomplete="current-password"
+          required
+        >
+
+        <p id="auth-error" class="auth-error" role="alert"></p>
+
+        <button type="submit" class="primary-button full-button" id="login-btn">
+          Continue
+        </button>
+
+      </form>
+
+      <p class="auth-footer">
+        Private household access
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- PROFILE SELECTION -->
+  <section id="profile-screen" class="auth-screen" hidden>
+
+    <div class="auth-card">
+
+      <div class="auth-icon">👋</div>
+
+      <p class="eyebrow">HOUSEHOLD ACCESS GRANTED</p>
+
+      <h1>Who's using the kitchen?</h1>
+
+      <p class="auth-description">
+        Select your profile to continue to the kitchen planner.
+      </p>
+
+      <div id="profile-list" class="profile-list">
+
+        <!-- Profiles will be loaded here by app.js -->
+
+      </div>
+
+      <div class="profile-divider">
+        <span>OR</span>
+      </div>
+
+      <button
+        type="button"
+        class="secondary-button full-button"
+        id="show-create-profile"
+      >
+        + Create New Profile
+      </button>
+
+      <p id="profile-error" class="auth-error" role="alert"></p>
+
+    </div>
+
+  </section>
+
+
+  <!-- CREATE PROFILE -->
+  <section id="create-profile-screen" class="auth-screen" hidden>
+
+    <div class="auth-card">
+
+      <div class="auth-icon">👤</div>
+
+      <p class="eyebrow">NEW HOUSEHOLD PROFILE</p>
+
+      <h1>Create your profile</h1>
+
+      <p class="auth-description">
+        Enter a name so you can easily identify your profile on this device.
+      </p>
+
+      <form id="profile-form">
+
+        <label for="profile-name">
+          Your name
+        </label>
+
+        <input
+          type="text"
+          id="profile-name"
+          placeholder="Example: Androse"
+          maxlength="40"
+          autocomplete="name"
+          required
+        >
+
+        <p id="create-profile-error" class="auth-error" role="alert"></p>
+
+        <button type="submit" class="primary-button full-button" id="create-profile-btn">
+          Create Profile
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button full-button"
+          id="back-to-profiles"
+        >
+          Back to Profiles
+        </button>
+
+      </form>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<!-- =========================================
+     MAIN KITCHEN PLANNER
+========================================= -->
+
+<div class="app-container" id="app-container" hidden>
+
+  <!-- HEADER -->
+  <header class="app-header">
+
+    <div class="header-brand">
+      <div class="brand-icon">🍃</div>
+
+      <div>
+        <h1>Germany Kitchen</h1>
+        <p>My little kitchen planner</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+
+      <span id="current-profile-name" class="current-profile-name"></span>
+
+      <button
+        class="icon-button"
+        id="switch-profile-btn"
+        title="Switch profile"
+        type="button"
+      >
+        👤
+      </button>
+
+      <button
+        class="icon-button"
+        id="export-btn"
+        title="Backup data"
+        type="button"
+      >
+        ↥
+      </button>
+
+      <input type="file" id="import-file" accept=".json" hidden>
+
+      <button
+        class="icon-button"
+        id="import-btn"
+        title="Import backup"
+        type="button"
+      >
+        ↧
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+
+    <!-- ================= DASHBOARD ================= -->
+    <section class="page active" id="dashboard">
+
+      <div class="welcome-section">
+
+        <div>
+          <p class="eyebrow">YOUR DAILY KITCHEN GUIDE</p>
+
+          <h2>What shall we cook today?</h2>
+
+          <p>
+            Check your ingredients and find dishes you can prepare.
+          </p>
+        </div>
+
+        <div class="welcome-emoji">🥗</div>
+
+      </div>
+
+
+      <!-- SUMMARY CARDS -->
+      <div class="summary-grid">
+
+        <div class="summary-card">
+          <div class="summary-icon green">🍲</div>
+          <h3 id="total-dishes">0</h3>
+          <p>Total dishes</p>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-icon green">✓</div>
+          <h3 id="ready-dishes">0</h3>
+          <p>Ready to cook</p>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-icon orange">◐</div>
+          <h3 id="partial-dishes">0</h3>
+          <p>Partially ready</p>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-icon red">!</div>
+          <h3 id="unavailable-dishes">0</h3>
+          <p>Missing items</p>
+        </div>
+
+      </div>
+
+
+      <!-- QUICK ACTIONS -->
+      <div class="section-heading">
+
+        <div>
+          <p class="eyebrow">QUICK ACCESS</p>
+          <h2>Kitchen shortcuts</h2>
+        </div>
+
+      </div>
+
+
+      <div class="quick-actions">
+
+        <button class="quick-action" data-page="inventory">
+          <span>🥕</span>
+          <strong>My Stock</strong>
+          <small>Manage ingredients</small>
+        </button>
+
+        <button class="quick-action" data-page="dishes">
+          <span>🍛</span>
+          <strong>My Dishes</strong>
+          <small>View recipes</small>
+        </button>
+
+        <button class="quick-action" id="generate-shopping">
+          <span>🛒</span>
+          <strong>Shopping</strong>
+          <small>Find missing items</small>
+        </button>
+
+        <button class="quick-action" data-page="planner">
+          <span>📅</span>
+          <strong>Meal Planner</strong>
+          <small>Plan your week</small>
+        </button>
+
+      </div>
+
+
+      <!-- AVAILABLE DISHES -->
+      <div class="section-heading">
+
+        <div>
+          <p class="eyebrow">BASED ON YOUR STOCK</p>
+          <h2>What can I cook?</h2>
+        </div>
+
+        <button class="text-button" data-page="dishes">
+          View all →
+        </button>
+
+      </div>
+
+
+      <div class="filter-scroll">
+
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="ready">Ready</button>
+        <button class="filter-btn" data-filter="partial">Partial</button>
+        <button class="filter-btn" data-filter="missing">Missing</button>
+
+      </div>
+
+
+      <div class="dashboard-category">
+
+        <select id="dashboard-category">
+          <option value="all">All categories</option>
+          <option value="Breakfast">Breakfast</option>
+          <option value="Lunch">Lunch</option>
+          <option value="Dinner">Dinner</option>
+          <option value="Snacks">Snacks</option>
+          <option value="Other">Other</option>
+        </select>
+
+      </div>
+
+
+      <div id="dashboard-dishes" class="dish-card-list"></div>
+
+      <button class="primary-button full-button" id="add-dish-dashboard">
+        + Add New Dish
+      </button>
+
+    </section>
+
+
+
+    <!-- ================= INVENTORY ================= -->
+    <section class="page" id="inventory">
+
+      <div class="page-intro">
+        <p class="eyebrow">INGREDIENT MANAGEMENT</p>
+        <h2>My Ingredients 🥕</h2>
+        <p>Keep track of everything available in your kitchen.</p>
+      </div>
+
+
+      <div class="summary-grid inventory-summary">
+
+        <div class="summary-card">
+          <h3 id="total-ingredients">0</h3>
+          <p>Total ingredients</p>
+        </div>
+
+        <div class="summary-card">
+          <h3 id="low-stock-count">0</h3>
+          <p>Out of stock</p>
+        </div>
+
+        <div class="summary-card">
+          <h3 id="expiring-count">0</h3>
+          <p>Expiring soon</p>
+        </div>
+
+      </div>
+
+
+      <button class="primary-button full-button" id="add-ingredient-btn">
+        + Add Ingredient
+      </button>
+
+
+      <div class="search-container">
+
+        <input
+          type="search"
+          id="ingredient-search"
+          placeholder="Search ingredients..."
+        >
+
+      </div>
+
+
+      <div class="inventory-list">
+
+        <div class="inventory-list-heading">
+          <h3>Available stock</h3>
+        </div>
+
+        <div id="ingredient-table-body" class="ingredient-card-list"></div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ================= DISHES ================= -->
+    <section class="page" id="dishes">
+
+      <div class="page-intro">
+        <p class="eyebrow">YOUR RECIPE COLLECTION</p>
+        <h2>My Dishes 🍲</h2>
+        <p>Save your favourite Indian recipes and ingredients.</p>
+      </div>
+
+
+      <button class="primary-button full-button" id="add-dish-btn">
+        + Add New Dish
+      </button>
+
+
+      <div class="search-container">
+
+        <input
+          type="search"
+          id="dish-search"
+          placeholder="Search dishes..."
+        >
+
+      </div>
+
+
+      <select id="dish-category-filter" class="full-select">
+        <option value="all">All categories</option>
+        <option value="Breakfast">Breakfast</option>
+        <option value="Lunch">Lunch</option>
+        <option value="Dinner">Dinner</option>
+        <option value="Snacks">Snacks</option>
+        <option value="Other">Other</option>
+      </select>
+
+
+      <div id="all-dishes-container" class="dish-card-list"></div>
+
+    </section>
+
+
+
+    <!-- ================= SHOPPING ================= -->
+    <section class="page" id="shopping">
+
+      <div class="page-intro">
+        <p class="eyebrow">SMART SHOPPING</p>
+        <h2>Shopping List 🛒</h2>
+        <p>Find out what you need to buy for your selected dishes.</p>
+      </div>
+
+
+      <div class="content-card">
+
+        <h3>Select your dishes</h3>
+
+        <p class="helper-text">
+          Choose the dishes you want to prepare. We will calculate the missing ingredients.
+        </p>
+
+        <div id="shopping-dish-selection"></div>
+
+        <button class="primary-button full-button" id="calculate-shopping">
+          Calculate Shopping List
+        </button>
+
+      </div>
+
+
+      <div class="shopping-results">
+        <h3>Items to buy</h3>
+        <div id="shopping-list-container"></div>
+      </div>
+
+    </section>
+
+
+
+    <!-- ================= PLANNER ================= -->
+    <section class="page" id="planner">
+
+      <div class="page-intro">
+        <p class="eyebrow">WEEKLY FOOD PLANNING</p>
+        <h2>Meal Planner 📅</h2>
+        <p>Plan breakfast, lunch and dinner for the week.</p>
+      </div>
+
+
+      <div class="week-navigation">
+
+        <button class="icon-button" id="previous-week">
+          ←
+        </button>
+
+        <h3 id="week-label">This Week</h3>
+
+        <button class="icon-button" id="next-week">
+          →
+        </button>
+
+      </div>
+
+
+      <div id="weekly-planner" class="weekly-planner"></div>
+
+    </section>
+
+
+
+    <!-- ================= REFERENCES ================= -->
+    <section class="page" id="references">
+
+      <div class="page-intro">
+        <p class="eyebrow">COOKING HELP</p>
+        <h2>Recipe References ▶</h2>
+        <p>Keep useful YouTube cooking links in one place.</p>
+      </div>
+
+
+      <div class="search-container">
+
+        <input
+          type="search"
+          id="reference-search"
+          placeholder="Search recipes..."
+        >
+
+      </div>
+
+
+      <div id="references-container" class="reference-list"></div>
+
+    </section>
+
+  </main>
+
+
+
+  <!-- ================= BOTTOM NAVIGATION ================= -->
+  <nav class="bottom-navigation">
+
+    <button class="nav-item active" data-page="dashboard">
+      <span class="nav-icon">⌂</span>
+      <small>Home</small>
+    </button>
+
+    <button class="nav-item" data-page="inventory">
+      <span class="nav-icon">🥕</span>
+      <small>Stock</small>
+    </button>
+
+    <button class="nav-item" data-page="dishes">
+      <span class="nav-icon">🍲</span>
+      <small>Dishes</small>
+    </button>
+
+    <button class="nav-item" data-page="shopping">
+      <span class="nav-icon">🛒</span>
+      <small>Shopping</small>
+    </button>
+
+    <button class="nav-item" data-page="planner">
+      <span class="nav-icon">📅</span>
+      <small>Planner</small>
+    </button>
+
+  </nav>
+
+</div>
+
+
+
+<!-- =========================================
+     INGREDIENT MODAL
+========================================= -->
+<div class="modal" id="ingredient-modal">
+
+  <div class="modal-overlay" data-close></div>
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+
+      <div>
+        <p class="eyebrow">KITCHEN STOCK</p>
+        <h2 id="ingredient-modal-title">Add Ingredient</h2>
+      </div>
+
+      <button class="close-button" data-close>×</button>
+
+    </div>
+
+
+    <form id="ingredient-form">
+
+      <input type="hidden" id="ingredient-id">
+
+      <label for="ingredient-name">Ingredient name</label>
+
+      <input
+        type="text"
+        id="ingredient-name"
+        placeholder="Example: Onion"
+        required
+      >
+
+
+      <label for="ingredient-quantity">Available quantity</label>
+
+      <input
+        type="number"
+        id="ingredient-quantity"
+        min="0"
+        step="any"
+        placeholder="Example: 2"
+        required
+      >
+
+
+      <label for="ingredient-unit">Unit</label>
+
+      <select id="ingredient-unit" required>
+        <option value="pcs">Pieces</option>
+        <option value="g">Grams</option>
+        <option value="kg">Kilograms</option>
+        <option value="ml">Millilitres</option>
+        <option value="l">Litres</option>
+        <option value="tsp">Teaspoons</option>
+        <option value="tbsp">Tablespoons</option>
+        <option value="packets">Packets</option>
+        <option value="bottles">Bottles</option>
+        <option value="pinches">Pinches</option>
+        <option value="available">Available / Not available</option>
+      </select>
+
+
+      <label for="ingredient-expiry">Expiry date (optional)</label>
+
+      <input type="date" id="ingredient-expiry">
+
+
+      <button type="submit" class="primary-button full-button">
+        Save Ingredient
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+
+<!-- =========================================
+     DISH MODAL
+========================================= -->
+<div class="modal" id="dish-modal">
+
+  <div class="modal-overlay" data-close></div>
+
+  <div class="modal-content large-modal">
+
+    <div class="modal-header">
+
+      <div>
+        <p class="eyebrow">RECIPE COLLECTION</p>
+        <h2 id="dish-modal-title">Add New Dish</h2>
+      </div>
+
+      <button class="close-button" data-close>×</button>
+
+    </div>
+
+
+    <form id="dish-form">
+
+      <input type="hidden" id="dish-id">
+
+
+      <label for="dish-name">Dish name</label>
+
+      <input
+        type="text"
+        id="dish-name"
+        placeholder="Example: Tomato Rice"
+        required
+      >
+
+
+      <label for="dish-category">Category</label>
+
+      <select id="dish-category" required>
+        <option value="Breakfast">Breakfast</option>
+        <option value="Lunch">Lunch</option>
+        <option value="Dinner">Dinner</option>
+        <option value="Snacks">Snacks</option>
+        <option value="Other">Other</option>
+      </select>
+
+
+      <label for="dish-icon">Dish icon (emoji)</label>
+
+      <input
+        type="text"
+        id="dish-icon"
+        placeholder="🍛"
+        maxlength="8"
+      >
+
+
+      <!-- RECIPE INGREDIENTS -->
+      <div class="form-section-heading">
+
+        <h3>Recipe Ingredients</h3>
+
+        <p>Add the quantity needed to prepare this dish.</p>
+
+      </div>
+
+
+      <div id="recipe-ingredients-list"></div>
+
+
+      <button
+        type="button"
+        class="secondary-button full-button"
+        id="add-recipe-ingredient"
+      >
+        + Add Ingredient
+      </button>
+
+
+      <!-- YOUTUBE REFERENCES -->
+      <div class="form-section-heading">
+
+        <h3>YouTube References</h3>
+
+        <p>Save cooking tutorial links.</p>
+
+      </div>
+
+
+      <div id="dish-video-links"></div>
+
+
+      <button
+        type="button"
+        class="secondary-button full-button"
+        id="add-video-link"
+      >
+        + Add YouTube Link
+      </button>
+
+
+      <label for="dish-notes">Notes (optional)</label>
+
+      <textarea
+        id="dish-notes"
+        rows="3"
+        placeholder="Add preparation notes..."
+      ></textarea>
+
+
+      <button type="submit" class="primary-button full-button">
+        Save Dish
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+
+<!-- =========================================
+     DISH DETAILS MODAL
+========================================= -->
+<div class="modal" id="dish-details-modal">
+
+  <div class="modal-overlay" data-close></div>
+
+  <div class="modal-content large-modal">
+
+    <div class="modal-header">
+
+      <h2>Dish Details</h2>
+
+      <button class="close-button" data-close>×</button>
+
+    </div>
+
+    <div id="dish-details-content"></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- =========================================
+     TOAST
+========================================= -->
+<div id="toast" class="toast"></div>
+
+
+
+<!-- =========================================
+     SCRIPTS
+========================================= -->
+
+<!-- SUPABASE JAVASCRIPT CLIENT -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- YOUR APPLICATION JAVASCRIPT -->
+<script src="app.js"></script>
+
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then(() => console.log("PWA ready"))
+      .catch(error => console.error("PWA error:", error));
+  });
+}
+</script>
+
+
+
+</body>
+</html>
