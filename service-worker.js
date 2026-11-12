@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "germany-kitchen-v1";
+const CACHE_NAME = "germany-kitchen-v1.1";
 
 const APP_FILES = [
   "./",
